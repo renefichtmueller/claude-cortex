@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>claude-cortex - Persistent Memory for Claude Code</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1117;color:#c9d1d9;font-family:system-ui,-apple-system,sans-serif;line-height:1.6}
+.header{text-align:center;padding:2rem 1rem;border-bottom:1px solid #21262d}
+.header h1{font-size:1.8rem;color:#a371f7}
+.header p{color:#8b949e;margin-top:.3rem}
+.container{max-width:1000px;margin:0 auto;padding:1.5rem 1rem}
+.section{margin-bottom:2rem}
+.section h2{font-size:1.2rem;color:#a371f7;margin-bottom:1rem;padding-bottom:.3rem;border-bottom:1px solid #21262d}
+.tree{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:1.5rem;font-family:'SF Mono',Monaco,monospace;font-size:.85rem}
+.tree-item{padding:.2rem 0;cursor:pointer;display:flex;align-items:center;gap:.4rem}
+.tree-item:hover{color:#a371f7}
+.tree-icon{width:16px;text-align:center;flex-shrink:0}
+.tree-children{margin-left:1.2rem;border-left:1px solid #21262d;padding-left:.5rem}
+.tree-item.active{color:#a371f7;font-weight:600}
+.preview{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:1rem;margin-top:1rem;font-size:.85rem;max-height:300px;overflow-y:auto;white-space:pre-wrap;color:#8b949e;display:none}
+.preview.open{display:block}
+.preview code{color:#c9d1d9}
+.cmd-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:1rem;display:flex;align-items:center;gap:.8rem;font-family:'SF Mono',Monaco,monospace;font-size:.9rem}
+.cmd-box code{flex:1;color:#3fb950}
+.copy-btn{padding:.4rem .8rem;background:#21262d;border:1px solid #30363d;border-radius:4px;color:#8b949e;cursor:pointer;font-size:.8rem}
+.copy-btn:hover{border-color:#a371f7;color:#a371f7}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.compare-col{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:1rem}
+.compare-col h3{font-size:.9rem;margin-bottom:.8rem;text-align:center}
+.compare-col.bad h3{color:#f85149}
+.compare-col.good h3{color:#3fb950}
+.compare-item{padding:.4rem 0;font-size:.85rem;display:flex;align-items:flex-start;gap:.4rem}
+.compare-item .icon{flex-shrink:0}
+.workflow{display:flex;align-items:center;gap:0;margin-top:1rem;flex-wrap:wrap;justify-content:center}
+.wf-step{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:.8rem 1rem;text-align:center;font-size:.8rem;min-width:120px;position:relative;transition:all .4s}
+.wf-step.active{border-color:#a371f7;background:#a371f722}
+.wf-step .wf-title{color:#a371f7;font-weight:600;font-size:.85rem}
+.wf-step .wf-desc{color:#8b949e;margin-top:.2rem}
+.wf-arrow{color:#30363d;font-size:1.5rem;padding:0 .3rem}
+.footer{text-align:center;padding:2rem;border-top:1px solid #21262d;margin-top:2rem;color:#8b949e;font-size:.85rem}
+.footer a{color:#58a6ff;text-decoration:none}
+@media(max-width:600px){.compare{grid-template-columns:1fr}.workflow{flex-direction:column}.wf-arrow{transform:rotate(90deg)}.header h1{font-size:1.3rem}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>claude-cortex</h1>
+<p>Give Claude Code a long-term memory &mdash; persistent knowledge across sessions, projects, and devices</p>
+</div>
+<div class="container">
+
+<div class="section">
+<h2>Memory File Structure</h2>
+<p style="color:#8b949e;margin-bottom:.8rem;font-size:.9rem">Click any file to see its template content.</p>
+<div class="tree" id="tree"></div>
+<div class="preview" id="preview"></div>
+</div>
+
+<div class="section">
+<h2>Get Started</h2>
+<div class="cmd-box">
+<span style="color:#8b949e">$</span>
+<code>npx claude-cortex init</code>
+<button class="copy-btn" onclick="navigator.clipboard.writeText('npx claude-cortex init');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+</div>
+<p style="color:#8b949e;margin-top:.5rem;font-size:.85rem">Creates a <code style="color:#c9d1d9">.claude/</code> memory directory in your project with all templates ready to use.</p>
+</div>
+
+<div class="section">
+<h2>Before &amp; After</h2>
+<div class="compare">
+<div class="compare-col bad">
+<h3>Without cortex</h3>
+<div class="compare-item"><span class="icon" style="color:#f85149">x</span> Re-explain context every session</div>
+<div class="compare-item"><span class="icon" style="color:#f85149">x</span> Forget why decisions were made</div>
+<div class="compare-item"><span class="icon" style="color:#f85149">x</span> Re-discover the same fixes</div>
+<div class="compare-item"><span class="icon" style="color:#f85149">x</span> Inconsistent code style</div>
+<div class="compare-item"><span class="icon" style="color:#f85149">x</span> Lost research and links</div>
+<div class="compare-item"><span class="icon" style="color:#f85149">x</span> No session history</div>
+</div>
+<div class="compare-col good">
+<h3>With cortex</h3>
+<div class="compare-item"><span class="icon" style="color:#3fb950">+</span> Claude reads MEMORY.md instantly</div>
+<div class="compare-item"><span class="icon" style="color:#3fb950">+</span> Decision log in project files</div>
+<div class="compare-item"><span class="icon" style="color:#3fb950">+</span> Incident runbooks document fixes</div>
+<div class="compare-item"><span class="icon" style="color:#3fb950">+</span> Feedback files encode preferences</div>
+<div class="compare-item"><span class="icon" style="color:#3fb950">+</span> Reference files archive discoveries</div>
+<div class="compare-item"><span class="icon" style="color:#3fb950">+</span> Activity log tracks everything</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>Session Workflow</h2>
+<div class="workflow" id="workflow">
+<div class="wf-step" data-i="0"><div class="wf-title">Session Start</div><div class="wf-desc">Claude opens</div></div>
+<div class="wf-arrow">&rarr;</div>
+<div class="wf-step" data-i="1"><div class="wf-title">Read Memory</div><div class="wf-desc">Load MEMORY.md</div></div>
+<div class="wf-arrow">&rarr;</div>
+<div class="wf-step" data-i="2"><div class="wf-title">Work</div><div class="wf-desc">Code with context</div></div>
+<div class="wf-arrow">&rarr;</div>
+<div class="wf-step" data-i="3"><div class="wf-title">Update Memory</div><div class="wf-desc">Save new knowledge</div></div>
+<div class="wf-arrow">&rarr;</div>
+<div class="wf-step" data-i="4"><div class="wf-title">Session End</div><div class="wf-desc">Context preserved</div></div>
+</div>
+</div>
+
+<div style="text-align:center;margin-top:1rem">
+<a href="https://github.com/renefichtmueller/claude-cortex" style="display:inline-block;padding:.8rem 2rem;background:#a371f7;color:#0d1117;border-radius:8px;font-weight:700;text-decoration:none;font-size:1rem">Get Started on GitHub</a>
+</div>
+</div>
+<div class="footer">
+Powered by <a href="https://github.com/renefichtmueller/claude-cortex">claude-cortex</a> &middot; Open Source &middot; MIT License &middot; <a href="https://github.com/renefichtmueller/claude-cortex">GitHub</a>
+</div>
+<script>
+const FILES={
+  ".claude/":{type:"dir",children:{
+    "MEMORY.md":{type:"file",desc:"Master index linking all knowledge files",content:"# Memory Index\\n> Concise index for your project.\\n\\n## Quick Context\\n- **Project:** MyApp\\n- **Stack:** Next.js + Prisma + PostgreSQL\\n- **Status:** Active development\\n\\n## CRITICAL RULES\\n> Rules followed every session.\\n\\n## PROJECT FILES\\n- [project-myapp.md](project-myapp.md)\\n\\n## ACTIVITY LOGS\\n- [activity-log.md](activity-log.md)\\n\\n## KEY PATTERNS\\n- Always use async operations\\n- Validate all API inputs"},
+    "activity-log.md":{type:"file",desc:"Session-by-session work tracking",content:"# Activity Log\\n\\n## 2025-03-15 | Session 14\\n- Implemented user auth flow\\n- Fixed Prisma connection pooling\\n- Next: Add rate limiting\\n\\n## 2025-03-14 | Session 13\\n- Migrated DB to PostgreSQL\\n- Updated all queries"},
+    "project-myapp.md":{type:"file",desc:"Stack, architecture, patterns",content:"# Project: MyApp\\n\\n## Stack\\n- Next.js 14, TypeScript\\n- Prisma ORM + PostgreSQL\\n- Tailwind CSS\\n\\n## Architecture\\n- /app router with RSC\\n- API routes in /app/api/\\n- Shared types in /types/\\n\\n## Key Patterns\\n- safeFetch with AbortController\\n- Zod validation on all inputs"},
+    "feedback-preferences.md":{type:"file",desc:"Code style and conventions",content:"# Feedback & Preferences\\n\\n## Code Style\\n- Prefer const over let\\n- Use early returns\\n- Max function length: 30 lines\\n\\n## Commit Format\\nfeat: / fix: / docs: / refactor:"},
+    "incident-template.md":{type:"file",desc:"Bug runbook template",content:"# Incident: [TITLE]\\n\\n## Summary\\nWhat happened and impact.\\n\\n## Root Cause\\nWhy it happened.\\n\\n## Fix\\nWhat was done.\\n\\n## Prevention\\nHow to avoid it."},
+    "integration-template.md":{type:"file",desc:"API integration docs",content:"# Integration: [SERVICE]\\n\\n## Endpoints\\n- POST /api/webhook\\n\\n## Auth\\nBearer token in header.\\n\\n## Gotchas\\n- Rate limited to 100/min"},
+    "reference-template.md":{type:"file",desc:"Research notes archive",content:"# Reference: [TOPIC]\\n\\n## Summary\\nKey findings.\\n\\n## Links\\n- https://example.com\\n\\n## Notes\\nUseful patterns discovered."}
+  }}
+};
+
+function renderTree(obj,container,path=''){
+  for(const[name,item]of Object.entries(obj)){
+    const el=document.createElement('div');
+    if(item.type==='dir'){
+      el.innerHTML=`<div class="tree-item"><span class="tree-icon">&#128193;</span>${name}</div>`;
+      const children=document.createElement('div');children.className='tree-children';
+      renderTree(item.children,children,path+name);
+      el.appendChild(children);
+    }else{
+      el.innerHTML=`<div class="tree-item" data-file="${path+name}"><span class="tree-icon">&#128196;</span>${name} <span style="color:#484f58;font-size:.75rem;margin-left:.5rem">${item.desc}</span></div>`;
+      el.querySelector('.tree-item').addEventListener('click',()=>{
+        document.querySelectorAll('.tree-item').forEach(x=>x.classList.remove('active'));
+        el.querySelector('.tree-item').classList.add('active');
+        const pre=document.getElementById('preview');
+        pre.classList.add('open');
+        pre.innerHTML=`<code>${item.content.replace(/</g,'&lt;')}</code>`;
+      });
+    }
+    container.appendChild(el);
+  }
+}
+renderTree(FILES,document.getElementById('tree'));
+
+let wfStep=0;
+function animateWorkflow(){
+  document.querySelectorAll('.wf-step').forEach(s=>s.classList.toggle('active',+s.dataset.i===wfStep));
+  wfStep=(wfStep+1)%5;
+}
+animateWorkflow();
+setInterval(animateWorkflow,2000);
+</script>
+</body>
+</html>
