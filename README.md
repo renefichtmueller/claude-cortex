@@ -296,6 +296,11 @@ Each example demonstrates realistic memory content that a team might build up ov
 5. **Prune quarterly.** Archive stale entries. Memory should be current and relevant.
 6. **Use the validation script.** Run `./scripts/validate.sh` weekly to catch structural issues.
 
+## Related Projects
+
+- **[claude-sync](https://github.com/renefichtmueller/claude-sync)** — Sync your cortex across all your devices. Desktop, laptop, work machine — one brain everywhere.
+- **[slop-radar](https://github.com/renefichtmueller/slop-radar)** — Detect AI-generated slop in text. Drop it into Claude Code as a skill to check output quality.
+
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
