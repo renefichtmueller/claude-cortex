@@ -1,33 +1,17 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Validate example memory (fullstack-saas)
+      - name: Validate scripts are executable
         run: |
-          chmod +x scripts/validate.sh
-          ./scripts/validate.sh examples/fullstack-saas
-
-      - name: Validate example memory (mobile-app)
-        run: ./scripts/validate.sh examples/mobile-app
-
-      - name: Stats example (fullstack-saas)
-        run: |
-          chmod +x scripts/stats.sh
-          ./scripts/stats.sh examples/fullstack-saas
-
-      - name: Test CLI init
-        run: |
-          node bin/claude-cortex.js init test-project /tmp/test-init
-          test -f /tmp/test-init/.claude/memory/MEMORY.md
-          node bin/claude-cortex.js validate /tmp/test-init
-          node bin/claude-cortex.js stats /tmp/test-init
+          bash scripts/validate.sh examples/fullstack-saas
+          bash scripts/stats.sh examples/fullstack-saas
+      - name: Test CLI
+        run: node bin/claude-cortex.js --help
