@@ -96,18 +96,21 @@ topic files           context               incidents, decisions
 
 ## Quick Start
 
-### 1. Clone and set up
+### Option A: npx (fastest)
+
+```bash
+# From your project directory
+npx claude-cortex init my-project
+```
+
+### Option B: Clone and set up
 
 ```bash
 git clone https://github.com/renefichtmueller/claude-cortex.git
 cd claude-cortex
 chmod +x setup.sh
 ./setup.sh
-```
 
-### 2. Initialize memory for your project
-
-```bash
 # From your project directory
 /path/to/claude-cortex/scripts/init.sh my-project
 ```

@@ -1,0 +1,9 @@
+{
+  "name": "claude-cortex",
+  "version": "1.0.1",
+  "description": "Persistent memory for Claude Code — structured knowledge across sessions",
+  "bin": { "claude-cortex": "./bin/claude-cortex.js" },
+  "license": "MIT",
+  "repository": "renefichtmueller/claude-cortex",
+  "keywords": ["claude", "claude-code", "memory", "ai", "developer-tools"]
+}
