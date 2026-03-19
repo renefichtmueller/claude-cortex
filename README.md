@@ -23,6 +23,8 @@
 
 ## The Problem
 
+> **[🚀 Live Demo](https://claude-cortex-demo.pages.dev)** — Try it in your browser, no installation needed.
+
 Every time you start a new Claude Code session, Claude starts from zero. It doesn't know:
 
 - What you were working on yesterday

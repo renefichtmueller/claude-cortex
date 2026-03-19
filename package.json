@@ -1,5 +1,5 @@
 {
-  "name": "claude-cortex",
+  "name": "claude-cortex-memory",
   "version": "1.0.1",
   "description": "Persistent memory for Claude Code — structured knowledge across sessions",
   "bin": { "claude-cortex": "./bin/claude-cortex.js" },
